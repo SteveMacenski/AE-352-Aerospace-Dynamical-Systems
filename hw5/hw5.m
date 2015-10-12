@@ -357,7 +357,7 @@ t4 = 0; t5 = 0; s4 = 0; s5 = 0;
   
   %size(h)
 
-  %F = TODO typing in
+  
   F =   [m*eye(3) zeros(3) zeros(3,1) zeros(3,1) R_3in0 R_3in0 zeros(3,2) zeros(3,2);...
         m4*eye(3) -m4*R_3in0*wedge(robot.o_4in3) zeros(3,1) zeros(3,1) -R_3in0 zeros(3) zeros(3,2) zeros(3,2);
         m5*eye(3) -m5*R_3in0*wedge(robot.o_5in3) zeros(3,1) zeros(3,1) zeros(3) -R_3in0 zeros(3,2) zeros(3,2);
