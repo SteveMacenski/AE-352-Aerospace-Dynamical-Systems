@@ -121,20 +121,20 @@ robot.rw5.p_in0 = nan(size(robot.rw5.p_in5));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% MUST CHANGE TODO 
+% MUST CHANGE
 %
 
-% - Mass and moment of inertia of SC TODO 
-robot.sc.m = 1;
-robot.sc.J_in3 = eye(3);
+% - Mass and moment of inertia of SC
+robot.sc.m = 24;
+robot.sc.J_in3 = 24/12*[17 0 0;0 37 0;0 0 52];
 
-% - Mass and moment of inertia of RW#4 TODO 
-robot.rw4.m = 1;
-robot.rw4.J_in4 = eye(3);
+% - Mass and moment of inertia of RW#4 
+robot.rw4.m = 3;
+robot.rw4.J_in4 = 3/12*[3.25 0 0;0 5 0;0 0 6.25];
 
-% - Mass and moment of inertia of RW#5 TODO
-robot.rw5.m = 1;
-robot.rw5.J_in5 = eye(3);
+% - Mass and moment of inertia of RW#5
+robot.rw5.m = 3;
+robot.rw5.J_in5 = 3/12*[6.25 0 0;0 3.25 0;0 0 5];
 
 %
 %
@@ -369,7 +369,7 @@ t4 = 0; t5 = 0; s4 = 0; s5 = 0;
   x = F/h;                
                   
 o_3in0dot = v_03in0;
-thetadot = [phi4dot, phi5dot, 0];
+thetadot = [phi4dot, phi5dot, 0]; %so so terribly wrong, correct this TODO
 phi4dotdot = x(7:9);
 phi5dotdot = x(10:12);
 v_03in0dot = x(1:3);
