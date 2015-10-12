@@ -249,13 +249,15 @@ while (~done)
     
     o_5in0 = o_3in0 + R_3in0*robot.o_5in3;
     
-    R_4in0 = [cos(phi4) 0 sin(phi4);...
+    R_4in3 = [cos(phi4) 0 sin(phi4);...
               0         1       0 ; 
               -sin(phi4) 0 cos(phi4)];
+    R_4in0 = R_3in0*R_4in3;      
           
-    R_5in0 = [cos(phi5) -sin(phi5) 0;...
+    R_5in3 = [cos(phi5) -sin(phi5) 0;...
               sin(phi5) cos(phi5) 0;
               0 0 1];
+    R_5in0 = R_3in0*R_5in3;
     
     % Compute robot.sc.p_in0, robot.rw4.p_in0, robot.rw5.p_in0
     %  (hint: you have o_3in0, R_3in0, o_4in0, R_4in0, o_5in0, R_5in0,
@@ -319,20 +321,48 @@ function [o_3in0dot,thetadot,phi4dot,phi5dot,...             % <- velocity
 m4 = robot.rw4.m; 
 m5 = robot.rw5.m;
 m = robot.sc.m;
+
+t4 = 0; t5 = 0; s4 = 0; s5 = 0;
+
   R_3in0 = [cos(theta(2))*cos(theta(3)) -cos(theta(2))*sin(theta(3)) sin(theta(2)); ...
         sin(theta(1))*sin(theta(2))*cos(theta(3))+cos(theta(1))*sin(theta(3))  (-1)*sin(theta(1))*sin(theta(2))*sin(theta(3))+cos(theta(1))*cos(theta(3)) (-1)*sin(theta(1))*cos(theta(2)); ...
         -cos(theta(1))*sin(theta(2))*cos(theta(3))+sin(theta(1))*sin(theta(3)) cos(theta(1))*sin(theta(2))*sin(theta(3))+sin(theta(1))*cos(theta(3)) cos(theta(1))*cos(theta(2))];
     
+    R_4in3 = [cos(phi4) 0 sin(phi4);...
+              0         1       0 ; 
+              -sin(phi4) 0 cos(phi4)];
+    R_4in0 = R_3in0*R_4in3;      
+          
+    R_5in3 = [cos(phi5) -sin(phi5) 0;...
+              sin(phi5) cos(phi5) 0;
+              0 0 1];
+    R_5in0 = R_3in0*R_5in3;
+    
+    t4 = [0;1;0];
+    t5 = [0;0;1];
+    
+    s4 = [1 0; 0 0; 0 1];
+    s5 = [1 0; 0 1; 0 0];
+    
  h = [zeros(3,1);
-      -m4*R_3in0*wedge(w_03in3)*wedge(w_03in3)*o_4in3;
-      -m5*R_3in0*wedge(w_03in3)*wedge(w_03in3)*o_5in3;
+      -m4*R_3in0*wedge(w_03in3)*wedge(w_03in3)*robot.o_4in3;
+      -m5*R_3in0*wedge(w_03in3)*wedge(w_03in3)*robot.o_5in3;
       -wedge(w_03in3)*robot.sc.J_in3*w_03in3 - t4*u4 - t5*u5;
-      -robot.rw4.J_in4*(R_3in4*wedge(w_34in4))'*w_03in3 - wedge(w_04in4)*robot.rw4.J_in4*w_04in4 + R_4in3'*t4*u4;
-      -robot.rw5.J_in5*(R_5in4*wedge(w_35in5))'*w_03in3 - wedge(w_05in5)*robot.rw5.J_in5*w_05in5 + R_5in3'*t5*u5];
+      -robot.rw4.J_in4*(R_4in3*wedge(w_34in4))'*w_03in3 - wedge(w_04in4)*robot.rw4.J_in4*w_04in4 + R_4in3'*t4*u4;
+      -robot.rw5.J_in5*(R_5in3*wedge(w_35in5))'*w_03in3 - wedge(w_05in5)*robot.rw5.J_in5*w_05in5 + R_5in3'*t5*u5];
   
-  %g = TODO typing in
-  %x = F/h;
-                  
+  size(h)
+
+  
+  %F = TODO typing in
+  F =   [m*eye(3) zeros(3) zeros(3,1) zeros(3,1) R_3in0 R_3in0 zeros(3,2) zeros(3,2);...
+        m4*eye(3) -m4*R_3in0*wedge(robot.o_4in3) zeros(3,1) zeros(3,1) -R_3in0 zeros(3) zeros(3,2) zeros(3,2);
+        m5*eye(3) -m5*R_3in0*wedge(robot.o_5in3) zeros(3,1) zeros(3,1) zeros(3) -R_3in0 0 0;
+        zeros(3) robot.sc.J_in3 zeros(3,1) zeros(3,1) wedge(robot.sc.p_in3) wedge(robot.sc.p_in3) s4 s5;
+        zeros(3) robot.rw4.J_in4*R_4in3' robot.rw4.J_in4*t4 0 -wedge(robot.rw4.p_in4)*R_4in3' 0 -R_4in3'*s4 0;
+        zeros(3) robot.rw5.J_in5*R_5in3' 0 robot.rw5.J_in5*t5 0 -wedge(robot.rw5.p_in5)*R_5in3' 0 -R_5in3'*s5];
+  
+  x = F/h;                
                   
 o_3in0dot = v_03in0;
 thetadot = [phi4dot, phi5dot, 0];
