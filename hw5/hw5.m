@@ -355,21 +355,20 @@ t4 = 0; t5 = 0; s4 = 0; s5 = 0;
       -robot.rw4.J_in4*(R_4in3*wedge(w_34in4))'*w_03in3 - wedge(w_04in4)*robot.rw4.J_in4*w_04in4 + R_4in3'*t4*u4;
       -robot.rw5.J_in5*(R_5in3*wedge(w_35in5))'*w_03in3 - wedge(w_05in5)*robot.rw5.J_in5*w_05in5 + R_5in3'*t5*u5];
   
-  size(h)
-
+  %size(h)
 
   %F = TODO typing in
   F =   [m*eye(3) zeros(3) zeros(3,1) zeros(3,1) R_3in0 R_3in0 zeros(3,2) zeros(3,2);...
         m4*eye(3) -m4*R_3in0*wedge(robot.o_4in3) zeros(3,1) zeros(3,1) -R_3in0 zeros(3) zeros(3,2) zeros(3,2);
-        m5*eye(3) -m5*R_3in0*wedge(robot.o_5in3) zeros(3,1) zeros(3,1) zeros(3) -R_3in0 0 0;
+        m5*eye(3) -m5*R_3in0*wedge(robot.o_5in3) zeros(3,1) zeros(3,1) zeros(3) -R_3in0 zeros(3,2) zeros(3,2);
         zeros(3) robot.sc.J_in3 zeros(3,1) zeros(3,1) wedge(robot.sc.p_in3) wedge(robot.sc.p_in3) s4 s5;
-        zeros(3) robot.rw4.J_in4*R_4in3' robot.rw4.J_in4*t4 0 -wedge(robot.rw4.p_in4)*R_4in3' 0 -R_4in3'*s4 0;
-        zeros(3) robot.rw5.J_in5*R_5in3' 0 robot.rw5.J_in5*t5 0 -wedge(robot.rw5.p_in5)*R_5in3' 0 -R_5in3'*s5];
-  
-  x = F/h;                
+        zeros(3) robot.rw4.J_in4*R_4in3' robot.rw4.J_in4*t4 zeros(3,1) -wedge(robot.rw4.p_in4)*R_4in3' zeros(3) -R_4in3'*s4 zeros(3,2);
+        zeros(3) robot.rw5.J_in5*R_5in3' zeros(3,1) robot.rw5.J_in5*t5 zeros(3,3) -wedge(robot.rw5.p_in5)*R_5in3' zeros(3,2) -R_5in3'*s5];
+  %size(F)
+  x = F\h              
                   
 o_3in0dot = v_03in0;
-thetadot = [phi4dot, phi5dot, 0]; %so so terribly wrong, correct this TODO
+thetadot = [phi4dot; phi5dot; 0]; %so so terribly wrong, correct this TODO
 phi4dotdot = x(7:9);
 phi5dotdot = x(10:12);
 v_03in0dot = x(1:3);
@@ -416,6 +415,7 @@ function xdot = GetXDot(t,x,u4,u5,robot)
              u4,u5,...                              % <- input torques
              robot);                                % <- parameters that describe the SC and RWs
 % Pack time derivatives.
+
 xdot = [o_3in0dot;thetadot;phi4dot;phi5dot;v_03in0dot;w_03in3dot;phi4dotdot;phi5dotdot];
 
 function [o_3in0,theta,phi4,phi5,v_03in0,w_03in3,phi4dot,phi5dot] = XToState(x)
