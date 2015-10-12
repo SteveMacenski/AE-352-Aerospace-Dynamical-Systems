@@ -48,6 +48,11 @@ robot = GetGeometryOfRobot;
 % Run the simulation.
 RunSimulation(robot,params);
 
+function [wedge] = wedge(vector)
+wedge = [0 -vector(3) vector(2);
+         vector(3) 0 vector(1);
+         -vector(2) vector(1) 0];
+
 function robot = GetGeometryOfRobot
 % - Vertices of spacecraft
 robot.sc.dx=6;
@@ -116,18 +121,18 @@ robot.rw5.p_in0 = nan(size(robot.rw5.p_in5));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% MUST CHANGE
+% MUST CHANGE TODO 
 %
 
-% - Mass and moment of inertia of SC
+% - Mass and moment of inertia of SC TODO
 robot.sc.m = 1;
 robot.sc.J_in3 = eye(3);
 
-% - Mass and moment of inertia of RW#4
+% - Mass and moment of inertia of RW#4 TODO
 robot.rw4.m = 1;
 robot.rw4.J_in4 = eye(3);
 
-% - Mass and moment of inertia of RW#5
+% - Mass and moment of inertia of RW#5 TODO
 robot.rw5.m = 1;
 robot.rw5.J_in5 = eye(3);
 
@@ -311,15 +316,31 @@ function [o_3in0dot,thetadot,phi4dot,phi5dot,...             % <- velocity
                       v_03in0,w_03in3,phi4dot,phi5dot,...    % <- velocity
                       u4,u5,...                              % <- input torques
                       robot)                                 % <- parameters that describe the SC and RWs
-
+m4 = 1; %TODO actually making some of these things exist
+m5 = 1;
+  R_3in0 = [cos(theta(2))*cos(theta(3)) -cos(theta(2))*sin(theta(3)) sin(theta(2)); ...
+        sin(theta(1))*sin(theta(2))*cos(theta(3))+cos(theta(1))*sin(theta(3))  (-1)*sin(theta(1))*sin(theta(2))*sin(theta(3))+cos(theta(1))*cos(theta(3)) (-1)*sin(theta(1))*cos(theta(2)); ...
+        -cos(theta(1))*sin(theta(2))*cos(theta(3))+sin(theta(1))*sin(theta(3)) cos(theta(1))*sin(theta(2))*sin(theta(3))+sin(theta(1))*cos(theta(3)) cos(theta(1))*cos(theta(2))];
+    
+ h = [zeros(3,1);
+      -m4*R_3in0*wedge(w_03in3)*wedge(w_03in3)*o_4in3;
+      -m5*R_3in0*wedge(w_03in3)*wedge(w_03in3)*o_5in3;
+      -wedge(w_03in3)*robot.sc.J_in3*w_03in3 - t4*u4 - t5*u5;
+      -robot.rw4.J_in4*(R_3in4*wedge(w_34in4))'*w_03in3 - wedge(w_04in4)*robot.rw4.J_in4*w_04in4 + R_4in3'*t4*u4;
+      -robot.rw5.J_in5*(R_5in4*wedge(w_35in5))'*w_03in3 - wedge(w_05in5)*robot.rw5.J_in5*w_05in5 + R_5in3'*t5*u5];
+  
+  %g = TODO typing in
+  x = inv(F)*h;
+                  
+                  
 o_3in0dot = v_03in0;
 thetadot = zeros(3,1);
+phi4dotdot = x(7:9);
+phi5dotdot = x(10:12);
+v_03in0dot = x(1:3);
+w_03in3dot = x(4:6);
 phi4dot = 0;
 phi5dot = 0;
-v_03in0dot = zeros(3,1);
-w_03in3dot = zeros(3,1);
-phi4dotdot = 0;
-phi5dotdot = 0;
 
 %
 %
