@@ -18,7 +18,7 @@ params.makemovie = false;
 % - This line says whether or not you want to use the keypad to turn on and
 %   off the reaction wheels.
 %
-%   If you do, then:
+%   If you do, then: 
 %
 %       7,4,1 apply positive, zero, and negative torque to RW4
 %       8,5,2 apply positive, zero, and negative torque to RW5
