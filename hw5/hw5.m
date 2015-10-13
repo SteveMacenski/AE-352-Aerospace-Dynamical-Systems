@@ -343,10 +343,11 @@ t4 = 0; t5 = 0; s4 = 0; s5 = 0;
     
     s4 = [1 0; 0 0; 0 1];
     s5 = [1 0; 0 1; 0 0];
-      w_34in4 = phi4dot;
-      w_04in4 = R_4in0*phi4dot;
-      w_35in5 = phi5dot;
-      w_05in5 = R_5in0*phi5dot;
+    
+    w_34in4 = [0; phi4dot; 0];
+    w_04in4 = R_4in0*[0; phi4dot; 0];
+    w_35in5 = [0; 0; phi5dot];
+    w_05in5 = R_5in0*[0; 0; phi5dot];
 
  h = [zeros(3,1);
       -m4*R_3in0*wedge(w_03in3)*wedge(w_03in3)*robot.o_4in3;
@@ -355,9 +356,6 @@ t4 = 0; t5 = 0; s4 = 0; s5 = 0;
       -robot.rw4.J_in4*(R_4in3*wedge(w_34in4))'*w_03in3 - wedge(w_04in4)*robot.rw4.J_in4*w_04in4 + R_4in3'*t4*u4;
       -robot.rw5.J_in5*(R_5in3*wedge(w_35in5))'*w_03in3 - wedge(w_05in5)*robot.rw5.J_in5*w_05in5 + R_5in3'*t5*u5];
   
-  %size(h)
-
-  
   F =   [m*eye(3) zeros(3) zeros(3,1) zeros(3,1) R_3in0 R_3in0 zeros(3,2) zeros(3,2);...
         m4*eye(3) -m4*R_3in0*wedge(robot.o_4in3) zeros(3,1) zeros(3,1) -R_3in0 zeros(3) zeros(3,2) zeros(3,2);
         m5*eye(3) -m5*R_3in0*wedge(robot.o_5in3) zeros(3,1) zeros(3,1) zeros(3) -R_3in0 zeros(3,2) zeros(3,2);
@@ -365,14 +363,19 @@ t4 = 0; t5 = 0; s4 = 0; s5 = 0;
         zeros(3) robot.rw4.J_in4*R_4in3' robot.rw4.J_in4*t4 zeros(3,1) -wedge(robot.rw4.p_in4)*R_4in3' zeros(3) -R_4in3'*s4 zeros(3,2);
         zeros(3) robot.rw5.J_in5*R_5in3' zeros(3,1) robot.rw5.J_in5*t5 zeros(3,3) -wedge(robot.rw5.p_in5)*R_5in3' zeros(3,2) -R_5in3'*s5];
   %size(F)
-  x = F\h              
+  x = F\h;
                   
 o_3in0dot = v_03in0;
-thetadot = [phi4dot; phi5dot; 0]; %so so terribly wrong, correct this TODO
-phi4dotdot = x(7:9);
-phi5dotdot = x(10:12);
+thetadot = [cos(theta(3))/cos(theta(2)) -sin(theta(3))/cos(theta(2)) 0;
+            sin(theta(3)) cos(theta(3)) 0;
+            -sin(theta(2))*cos(theta(3))/cos(theta(2)) sin(theta(2))*sin(theta(3))/cos(theta(2)) 1]*w_03in3;
+
+phi4dotdot = x(7);
+phi5dotdot = x(8);
+
 v_03in0dot = x(1:3);
 w_03in3dot = x(4:6);
+
 phi4dot = phi4dot;
 phi5dot = phi5dot;
 
