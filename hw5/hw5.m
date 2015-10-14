@@ -30,11 +30,11 @@ params.makemovie = false;
 %
 %   In either case, 'q' causes the simulation to quit (and to do it
 %   gracefully, saving either the recorded actions or the movie).
-params.usekeypad = false;
+params.usekeypad = true;
 
 %
 %
-%
+%pi
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -170,7 +170,7 @@ tmax = 100;
 % Define initial conditions
 % - configuration
 o_3in0 = [0;0;0];
-theta = [0;0;0];
+theta = [0;pi/2;pi/2];
 phi4 = 0;
 phi5 = 0;
 % - velocity
@@ -345,9 +345,9 @@ t4 = 0; t5 = 0; s4 = 0; s5 = 0;
     s5 = [1 0; 0 1; 0 0];
     
     w_34in4 = [0; phi4dot; 0];
-    w_04in4 = R_4in0*[0; phi4dot; 0];
+    w_04in4=R_4in3'*w_03in3+w_34in4;
     w_35in5 = [0; 0; phi5dot];
-    w_05in5 = R_5in0*[0; 0; phi5dot];
+    w_05in5=R_5in3'*w_03in3+w_35in5;
 
  h = [zeros(3,1);
       -m4*R_3in0*wedge(w_03in3)*wedge(w_03in3)*robot.o_4in3;
@@ -359,9 +359,9 @@ t4 = 0; t5 = 0; s4 = 0; s5 = 0;
   F =   [m*eye(3) zeros(3) zeros(3,1) zeros(3,1) R_3in0 R_3in0 zeros(3,2) zeros(3,2);...
         m4*eye(3) -m4*R_3in0*wedge(robot.o_4in3) zeros(3,1) zeros(3,1) -R_3in0 zeros(3) zeros(3,2) zeros(3,2);
         m5*eye(3) -m5*R_3in0*wedge(robot.o_5in3) zeros(3,1) zeros(3,1) zeros(3) -R_3in0 zeros(3,2) zeros(3,2);
-        zeros(3) robot.sc.J_in3 zeros(3,1) zeros(3,1) wedge(robot.sc.p_in3) wedge(robot.sc.p_in3) s4 s5;
-        zeros(3) robot.rw4.J_in4*R_4in3' robot.rw4.J_in4*t4 zeros(3,1) -wedge(robot.rw4.p_in4)*R_4in3' zeros(3) -R_4in3'*s4 zeros(3,2);
-        zeros(3) robot.rw5.J_in5*R_5in3' zeros(3,1) robot.rw5.J_in5*t5 zeros(3,3) -wedge(robot.rw5.p_in5)*R_5in3' zeros(3,2) -R_5in3'*s5];
+        zeros(3) robot.sc.J_in3 zeros(3,1) zeros(3,1) wedge(robot.rw4.ppin_in3) wedge(robot.rw5.ppin_in3) s4 s5;
+        zeros(3) robot.rw4.J_in4*R_4in3' robot.rw4.J_in4*t4 zeros(3,1) -wedge(robot.rw4.ppin_in3)*R_4in3' zeros(3) -R_4in3'*s4 zeros(3,2);
+        zeros(3) robot.rw5.J_in5*R_5in3' zeros(3,1) robot.rw5.J_in5*t5 zeros(3,3) -wedge(robot.rw5.ppin_in3)*R_5in3' zeros(3,2) -R_5in3'*s5];
   %size(F)
   x = F\h;
                   
