@@ -6,7 +6,7 @@ function hw6
 %
 
 % - This line says your name.
-params.teamname = 'My Team (My Name and My Other Name)';
+params.teamname = 'My Team (Steve Macenski & Chris Lorenz)';
 % - This line says the file to record your actions.
 params.action_filename = 'action.mat';
 % - This line says the file to record your movie.
@@ -16,7 +16,7 @@ params.snapshot_filename = 'snapshot.pdf';
 % - This line says whether or not you want to record a movie --- change it
 %   from "false" to "true" and you will record a movie. Note that you must
 %   have already recorded actions, before making a movie!
-params.makemovie = true;
+params.makemovie = false;
 % - This line says whether or not you want to take a snapshot --- change it
 %   from "false" to "true" and you will create a PDF of the figure after
 %   the simulation is over.
@@ -144,7 +144,7 @@ robot.kfriction = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% MUST CHANGE
+% MUST CHANGE TODO
 %
 
 % - Mass and moment of inertia of link #1
@@ -254,7 +254,7 @@ while (~done)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% MUST CHANGE
+% MUST CHANGE TODO
 %
     
     % Compute: orientation and position of link #1
@@ -327,7 +327,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% MUST CHANGE
+% MUST CHANGE TODO
 %
 
 function [thetadot,thetadotdot] = GetRates(theta,thetadot,u1,u2,u3,robot)
@@ -346,7 +346,7 @@ function [thetadot,thetadotdot] = GetRates(theta,thetadot,u1,u2,u3,robot)
 %   thetadot    3x1 matrix of joint velocities
 %   thetadotdot 3x1 matrix of joint accelerations
 
-thetadot = zeros(3,1);
+thetadot = thetadot;
 thetadotdot = zeros(3,1);
 
 %
