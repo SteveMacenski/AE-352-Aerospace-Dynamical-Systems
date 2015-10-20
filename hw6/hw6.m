@@ -256,26 +256,41 @@ while (~done)
 %
 % MUST CHANGE TODO
 %
-    
+    c1 = cos(theta(1));
+    s1 = sin(theta(1));
     % Compute: orientation and position of link #1
     %   (R_1in0 and o_1in0)
-    R_1in0 = eye(3);
-    o_1in0 = zeros(3,1);
+    R_1in0 = [c1 -s1 0;
+              s1 c1 0;
+              0 0 1];
+    o_1in0 = robot.a1 + R_1in0*robot.b1;
     
     % Compute: orientation and position of link #2
     %   (R_2in0 and o_2in0 ... hint: first compute R_2in1 and o_2in1)
-    R_2in0 = eye(3);
-    o_2in0 = zeros(3,1);
+    s2 = sin(theta(2));
+    c2 = cos(theta(2));
+    R_2in1 = [1 0 0;
+              0 c2 -s2;
+              0 s1 c2];
+    R_2in0 = R_1in0*R_2in1;
+    o_2in1 = robot.a2 + R_2in1*robot.b2;
+    o_2in0 = o_1in0 + R_1in0*o_2in1;
     
     % Compute: orientation and position of link #3
     %   (R_3in0 and o_3in0 ... hint: first compute R_3in2 and o_3in2)
-    R_3in0 = eye(3);
-    o_3in0 = zeros(3,1);
+    s3 = sin(theta(3));
+    c3 = cos(theta(3));
+    R_3in2 = [1 0 0;
+              0 c3 -s3
+              0 s3 c3];
+    R_3in0 = R_2in0*R_3in2;
+    o_3in2 = robot.a3 + R_3in2*robot.b3;
+    o_3in0 = o_2in0 + R_2in0*o_3in2;
     
     % Compute: robot.link1.p_in0, robot.link2.p_in0, robot.link3.p_in0
-    robot.link1.p_in0 = robot.link1.p_in1;
-    robot.link2.p_in0 = robot.link2.p_in2;
-    robot.link3.p_in0 = robot.link3.p_in3;
+    robot.link1.p_in0 = [o_1in0 o_1in0 o_1in0 o_1in0 o_1in0 o_1in0 o_1in0 o_1in0] + R_1in0*robot.link1.p_in1;
+    robot.link2.p_in0 = [o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0] + R_2in0*robot.link2.p_in2;
+    robot.link3.p_in0 = [o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0] + R_3in0*robot.link3.p_in3;
     
 %
 %
