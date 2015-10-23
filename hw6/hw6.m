@@ -201,7 +201,7 @@ dt = 2e-2;
 tmax = 100;
 % Define initial conditions
 % - joint angles (configuration)
-theta = [0;0;0];
+theta = [0;pi/2;0];
 % - joint velocities
 thetadot = [0;0;0];
 % Define intial motor torques
@@ -280,7 +280,7 @@ while (~done)
     c2 = cos(theta(2));
     R_2in1 = [1 0 0;
               0 c2 -s2;
-              0 s1 c2];
+              0 s2 c2];
     R_2in0 = R_1in0*R_2in1;
     o_2in1 = robot.a2 + R_2in1*robot.b2;
     o_2in0 = o_1in0 + R_1in0*o_2in1;
@@ -391,7 +391,7 @@ function [thetadot,thetadotdot] = GetRates(theta,thetadot,u1,u2,u3,robot)
     c2 = cos(theta(2));
     R_2in1 = [1 0 0;
               0 c2 -s2;
-              0 s1 c2];
+              0 s2 c2];
     R_2in0 = R_1in0*R_2in1;
     o_2in1 = robot.a2 + R_2in1*robot.b2;
     o_2in0 = o_1in0 + R_1in0*o_2in1;
@@ -449,15 +449,15 @@ function [thetadot,thetadotdot] = GetRates(theta,thetadot,u1,u2,u3,robot)
     w_03in3 = R_3in2'*w_02in2+w_23in3;
     
     F = [-m1*R_1in0*wedge(b1)*z1, zeros(3,1), zeros(3,1), -eye(3), zeros(3,2), R_1in0, zeros(3,2), zeros(3,3), zeros(3,2);
-        -m2*R_1in0*(wedge(o_2in1) + wedge(b1))*z1, -m2*R_2in0*wedge(b2)*x2, zeros(3,1), zeros(3,3), zeros(3,2), -R_1in0, zeros(3,2), R_2in0, zeros(3,2);
+        m2*R_1in0*(wedge(o_2in1) + -wedge(b1))*z1, m2*R_2in0*wedge(b2)*x2, zeros(3,1), zeros(3,3), zeros(3,2), R_1in0, zeros(3,2), -R_2in0, zeros(3,2);
         -m3*R_1in0*(wedge(o_2in1)+wedge(b1))*z1-R_2in0*wedge(o_3in2)*R_2in1'*z1, -m3*R_2in0*(wedge(o_3in2)+wedge(b2))*x2, -m3*R_3in0*wedge(b3)*x3, zeros(3,3), zeros(3,2), zeros(3,3), zeros(3,2), -R_2in0, zeros(3,2);
         J1*z1, zeros(3,1), zeros(3,1), -wedge(p_01in1)*R_1in0', -R_1in0'*s01, wedge(p_12in2), s12, zeros(3,3), zeros(3,2);
         J2*R_2in1'*z1, J2*x2, zeros(3,1), zeros(3,3), zeros(3,2), -wedge(p_12in2)*R_2in1', -R_2in1'*s12, wedge(p_23in3), s23;
-        J3*(R_3in2'*R_2in1'*z1), J3*R_3in2'*x2, J3*x3, zeros(3,3), zeros(3,2), zeros(3,3), zeros(3,2), -wedge(-R_3in2'*o_3in2+R_3in2*p_23in3)*R_3in2', -R_3in2'*s23];
+        J3*(R_3in2'*R_2in1'*z1), J3*R_3in2'*x2, J3*x3, zeros(3,3), zeros(3,2), zeros(3,3), zeros(3,2), -wedge(p_23in3)*R_3in2', -R_3in2'*s23];
         
     h = [-robot.link1.m*g*z0 - robot.link1.m*R_1in0*wedge(w_01in1)*wedge(w_01in1)*robot.b1;
-        -robot.link2.m*g*z1 - robot.link2.m*R_1in0*wedge(w_01in1)*o_2in1 - robot.link2.m*R_2in0*wedge(w_02in2)^2*robot.b2 - robot.link2.m*R_1in0*wedge(w_01in1)^2*robot.b1 - R_1in0*wedge(w_01in1)*R_2in1*wedge(w_12in2)*robot.b2;
-        -robot.link3.m*g*z2 - robot.link3.m*R_1in0*wedge(w_01in1)^2*o_2in1 - robot.link3.m*R_2in0*wedge(w_02in2)^2*robot.b2 - R_1in0*wedge(w_01in1)*R_2in1*wedge(w_12in2)*robot.b2 - R_2in0'*wedge(w_02in2)*o_3in2 + R_2in0*wedge(o_3in2)*(R_2in1*wedge(w_12in2)')*w_01in1 - R_2in0*wedge(w_02in2)*R_3in2*wedge(w_23in3)*robot.b3 - R_3in0*wedge(w_03in3)*wedge(w_23in3)*robot.b3 - R_1in0*wedge(w_01in1)^2*robot.b1;
+        robot.link2.m*g*z1 + robot.link2.m*R_1in0*wedge(w_01in1)*o_2in1 + robot.link2.m*R_2in0*wedge(w_02in2)^2*robot.b2 + robot.link2.m*R_1in0*wedge(w_01in1)^2*robot.b1 + R_1in0*wedge(w_01in1)*R_2in1*wedge(w_12in2)*robot.b2;
+        -robot.link3.m*g*z2 - robot.link3.m*R_1in0*wedge(w_01in1)^2*o_2in1 - robot.link3.m*R_2in0*wedge(w_02in2)^2*robot.b2 - R_1in0*wedge(w_01in1)*R_2in1*wedge(w_12in2)*robot.b2 - R_2in0'*wedge(w_02in2)*o_3in2 + R_2in0*wedge(o_3in2)*(R_2in1*wedge(w_12in2))'*w_01in1 - R_2in0*wedge(w_02in2)*R_3in2*wedge(w_23in3)*robot.b3 - R_3in0*wedge(w_03in3)*wedge(w_23in3)*robot.b3 - R_1in0*wedge(w_01in1)^2*robot.b1;
         -wedge(w_01in1)*J1*w_01in1 + R_1in0'*(t01*(u1 - kf*theta(1))) - t12*(u2 - kf*theta(2));
         -J2*(R_2in1*wedge(w_01in1))'*w_01in1 - wedge(w_02in2)*J2*w_02in2 + R_2in1*t12*(u2 - kf*thetadot(2)) - t23*(u3 - kf*thetadot(3));
         -J3*(R_3in2*wedge(w_23in3))'*w_02in2 - J3*R_3in2'*(R_2in1*wedge(w_12in2))'*w_01in1 + R_3in2'*t23*(u3 - kf*thetadot(3)) - wedge(w_03in3)*J3*w_03in3 - R_3in2'*R_2in1'*wedge(w_01in1)*w_01in1 - J3*R_3in2'*(R_2in1'*wedge(w_12in2))'*w_01in1];
@@ -532,13 +532,13 @@ if isempty(robotfig)
                              'FaceAlpha',alpha,'EdgeAlpha',alpha,...
                              'backfacelighting','reverselit','AmbientStrength',0.6);
 else
-%     set(robotfig.link1,'vertices',robot.link1.p_in0');
-%     set(robotfig.link2,'vertices',robot.link2.p_in0');
-%     set(robotfig.link3,'vertices',robot.link3.p_in0');
+     set(robotfig.link1,'vertices',robot.link1.p_in0');
+     set(robotfig.link2,'vertices',robot.link2.p_in0');
+     set(robotfig.link3,'vertices',robot.link3.p_in0');
     p = o_1in0+R_1in0*robot.p_12in1;
-%     set(robotfig.joint2,'xdata',p(1),'ydata',p(2),'zdata',p(3));
+     set(robotfig.joint2,'xdata',p(1),'ydata',p(2),'zdata',p(3));
     p = o_2in0+R_2in0*robot.p_23in2;
-%     set(robotfig.joint3,'xdata',p(1),'ydata',p(2),'zdata',p(3));
+     set(robotfig.joint3,'xdata',p(1),'ydata',p(2),'zdata',p(3));
 end
 
 function frame = DrawFrame(frame,o,R)
@@ -548,9 +548,9 @@ if isempty(frame)
     frame.y = plot3(p(1,[1 3]),p(2,[1 3]),p(3,[1 3]),'g-','linewidth',4);
     frame.z = plot3(p(1,[1 4]),p(2,[1 4]),p(3,[1 4]),'b-','linewidth',4);
 else
-%     set(frame.x,'xdata',p(1,[1 2]),'ydata',p(2,[1 2]),'zdata',p(3,[1 2]));
-%     set(frame.y,'xdata',p(1,[1 3]),'ydata',p(2,[1 3]),'zdata',p(3,[1 3]));
-%     set(frame.z,'xdata',p(1,[1 4]),'ydata',p(2,[1 4]),'zdata',p(3,[1 4]));
+     set(frame.x,'xdata',p(1,[1 2]),'ydata',p(2,[1 2]),'zdata',p(3,[1 2]));
+     set(frame.y,'xdata',p(1,[1 3]),'ydata',p(2,[1 3]),'zdata',p(3,[1 3]));
+     set(frame.z,'xdata',p(1,[1 4]),'ydata',p(2,[1 4]),'zdata',p(3,[1 4]));
 end
 
 function world = CreateFigure(robot,params)
@@ -576,8 +576,8 @@ axis manual;
 hold on;
 view([90-37.5,20]);
 box on;
-% set(gca,'projection','perspective');
-% set(gca,'clipping','on','clippingstyle','3dbox');
+ set(gca,'projection','perspective');
+ set(gca,'clipping','on','clippingstyle','3dbox');
 world.view0.robot = DrawRobot([],robot,zeros(3,1),eye(3),zeros(3,1),eye(3),0.6);
 world.view0.frame0 = DrawFrame([],zeros(3,1),eye(3));
 world.view0.frame1 = DrawFrame([],zeros(3,1),eye(3));
@@ -593,9 +593,9 @@ world.view0.robot = DrawRobot(world.view0.robot,robot,o_1in0,R_1in0,o_2in0,R_2in
 world.view0.frame1 = DrawFrame(world.view0.frame1,o_1in0,R_1in0);
 world.view0.frame2 = DrawFrame(world.view0.frame2,o_2in0,R_2in0);
 world.view0.frame3 = DrawFrame(world.view0.frame3,o_3in0,R_3in0);
-% set(world.view0.light,'position',(o_3in0+R_3in0*[0;0.51*robot.link3.dy;0])');
-% set(world.text.time,'string',sprintf('t = %6.2f / %6.2f\n',t,tmax));
-% set(world.text.torques,'string',sprintf('u_1 = %6.1f\nu_2 = %6.1f\nu_3 = %6.1f',u1,u2,u3));
+ set(world.view0.light,'position',(o_3in0+R_3in0*[0;0.51*robot.link3.dy;0])');
+ set(world.text.time,'string',sprintf('t = %6.2f / %6.2f\n',t,tmax));
+ set(world.text.torques,'string',sprintf('u_1 = %6.1f\nu_2 = %6.1f\nu_3 = %6.1f',u1,u2,u3));
 drawnow
 
 function onkeypress_nokeypad(src,event)
