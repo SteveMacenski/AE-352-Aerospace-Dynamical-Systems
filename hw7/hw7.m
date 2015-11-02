@@ -329,34 +329,20 @@ function [o_1in0dot,o_2in0dot,o_3in0dot,theta1dot,theta2dot,theta3dot,v_01in0dot
 %F = [];
 %h = [];
 
-%gamma = F\h;
-% gamma(1:3) = o_1in0dot;
-% gamma(4:6) = o_2in0dot;
-% gamma(7:9) = o_3in0dot;
-% gamma(10:12) = theta1dot;
-% gamma(13:15) = theta2dot;
-% gamma(16:18) = theta3dot;
-% gamma(19:21) = v_01in0dot;
-% gamma(22:24) = v_02in0dot;
-% gamma(25:27) = v_03in0dot;
-% gamma(28:30) = w_01in1dot;
-% gamma(31:33) = w_02in2dot;
-% gamma(34:36) = w_03in3dot;
+gamma = zeros(36,1);%F\h;
+o_1in0dot = gamma(1:3);
+o_2in0dot = gamma(4:6);
+o_3in0dot = gamma(7:9);
+theta1dot = gamma(10:12);
+theta2dot = gamma(13:15);
+theta3dot = gamma(16:18);
+v_01in0dot = gamma(19:21);
+v_02in0dot = gamma(22:24);
+v_03in0dot = gamma(25:27);
+w_01in1dot = gamma(28:30);
+w_02in2dot = gamma(31:33);
+w_03in3dot = gamma(34:36);
 
-
-
-o_1in0dot = zeros(3,1);
-o_2in0dot = zeros(3,1);
-o_3in0dot = zeros(3,1);
-theta1dot = zeros(3,1);
-theta2dot = zeros(3,1);
-theta3dot = zeros(3,1);
-v_01in0dot = zeros(3,1);
-v_02in0dot = zeros(3,1);
-v_03in0dot = zeros(3,1);
-w_01in1dot = zeros(3,1);
-w_02in2dot = zeros(3,1);
-w_03in3dot = zeros(3,1);
 
 end
 
