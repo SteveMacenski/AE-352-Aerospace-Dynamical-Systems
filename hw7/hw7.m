@@ -326,28 +326,29 @@ end
 function [o_1in0dot,o_2in0dot,o_3in0dot,theta1dot,theta2dot,theta3dot,v_01in0dot,v_02in0dot,v_03in0dot,w_01in1dot,w_02in2dot,w_03in3dot] = ...
     GetRates(o_1in0,o_2in0,o_3in0,theta1,theta2,theta3,v_01in0,v_02in0,v_03in0,w_01in1,w_02in2,w_03in3,u2,u3,robot)
 
-t12 =
-t13 = 
-s12 = 
-s13 = 
+% t12 = 
+% t13 = 
+% s12 = 
+% s13 = 
 
 
 %F = [];
 %h = [];
 
-gamma = zeros(36,1);%F\h;
-o_1in0dot = gamma(1:3);
-o_2in0dot = gamma(4:6);
-o_3in0dot = gamma(7:9);
-theta1dot = gamma(10:12);
-theta2dot = gamma(13:15);
-theta3dot = gamma(16:18);
-v_01in0dot = gamma(19:21);
-v_02in0dot = gamma(22:24);
-v_03in0dot = gamma(25:27);
-w_01in1dot = gamma(28:30);
-w_02in2dot = gamma(31:33);
-w_03in3dot = gamma(34:36);
+gamma = zeros(18,1);%F\h;
+o_1in0dot = v_01in0;
+o_2in0dot = v_02in0;
+o_3in0dot = v_03in0;
+theta1dot = w_01in1;        %is this right?
+theta2dot = w_02in2;        %is this right?
+theta3dot = w_03in3;        %is this right?
+v_01in0dot = gamma(1:3);
+v_02in0dot = gamma(4:6);
+v_03in0dot = gamma(7:9);
+w_01in1dot = gamma(10:12);
+w_02in2dot = gamma(13:15);
+w_03in3dot = gamma(16:18);
+
 
 
 end
