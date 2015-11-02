@@ -263,7 +263,7 @@ while (~done)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% MUST CHANGE TODO
+% MUST CHANGE 
 %
     c1 = cos(theta(1));
     s1 = sin(theta(1));
