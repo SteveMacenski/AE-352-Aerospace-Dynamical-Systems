@@ -326,6 +326,12 @@ end
 function [o_1in0dot,o_2in0dot,o_3in0dot,theta1dot,theta2dot,theta3dot,v_01in0dot,v_02in0dot,v_03in0dot,w_01in1dot,w_02in2dot,w_03in3dot] = ...
     GetRates(o_1in0,o_2in0,o_3in0,theta1,theta2,theta3,v_01in0,v_02in0,v_03in0,w_01in1,w_02in2,w_03in3,u2,u3,robot)
 
+t12 =
+t13 = 
+s12 = 
+s13 = 
+
+
 %F = [];
 %h = [];
 
@@ -558,6 +564,12 @@ function [m,J] = MassAndMomentOfInertiaOfWheel(rho,a,r)
 % - assumes uniform density
 m = rho*(pi*a*r^2)/3;
 J = (m/10)*diag([6*r^2,2*a^2+3*r^2,2*a^2+3*r^2]);
+end
+
+function [wedge] = wedge(vector)
+wedge = [0 -vector(3) vector(2);
+         vector(3) 0 vector(1);
+         -vector(2) vector(1) 0];
 end
 
 %
