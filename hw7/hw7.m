@@ -16,11 +16,11 @@ params.snapshot_filename = 'snapshot.pdf';
 % - This line says whether or not you want to record a movie --- change it
 %   from "false" to "true" and you will record a movie. Note that you must
 %   have already recorded actions, before making a movie!
-params.makemovie = false;
+params.makemovie = true;
 % - This line says whether or not you want to take a snapshot --- change it
 %   from "false" to "true" and you will create a PDF of the figure after
 %   the simulation is over.
-params.makesnapshot = false;
+params.makesnapshot = true;
 
 % The keyboard interface is as follows:
 %
@@ -257,11 +257,6 @@ while (1)
     robot.wheel2.p_in0 = o_2in0 * ones(1,34) + R_2in0 * robot.wheel2.p_in2;
     robot.wheel3.p_in0 = o_3in0 * ones(1,34) + R_3in0 * robot.wheel3.p_in3;
     
-    % Compute: (coordinate transformations)
-    robot.chassis.p_in0 = R_1in0*robot.chassis.p_in1 + [o_1in0 o_1in0 o_1in0 o_1in0 o_1in0 o_1in0 o_1in0 o_1in0];
-    robot.wheel2.p_in0 = R_2in0*robot.wheel2.p_in2 + [o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 o_2in0 ];
-    robot.wheel3.p_in0 = R_3in0*robot.wheel3.p_in3 + [o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 o_3in0 ];
-    
 %
 %
 %
@@ -340,22 +335,123 @@ end
 function [o_1in0dot,o_2in0dot,o_3in0dot,theta1dot,theta2dot,theta3dot,v_01in0dot,v_02in0dot,v_03in0dot,w_01in1dot,w_02in2dot,w_03in3dot] = ...
     GetRates(o_1in0,o_2in0,o_3in0,theta1,theta2,theta3,v_01in0,v_02in0,v_03in0,w_01in1,w_02in2,w_03in3,u2,u3,robot)
 
-% t12 = 
-% t13 = 
-% s12 = 
-% s13 = 
+
+%definitions 
+m1 = robot.m1;
+m2 = robot.m2;
+m3 = robot.m3;
+J1 = robot.J_1in1;
+J2 = robot.J_2in2;
+J3 = robot.J_3in3;
+k = robot.k;
+p_12in1 = robot.p_12in1;
+p_13in1 = robot.p_13in1;
+r = robot.r;
+g = robot.g_in0;
+
+    o_1in0dot = v_01in0;
+    o_2in0dot = v_02in0;
+    o_3in0dot = v_03in0;
+
+    t12 = [1;0;0];
+    t13 = [1;0;0];
+    S_12 = [0,0;1,0;0,1];
+    S_13 = [0,0;1,0;0,1];
+
+        c11 = cos(theta1(1));
+        c12 = cos(theta1(2));
+        c13 = cos(theta1(3));
+        s11 = sin(theta1(1));
+        s12 = sin(theta1(2));
+        s13 = sin(theta1(3));
+
+        c21 = cos(theta2(1));
+        c22 = cos(theta2(2));
+        c23 = cos(theta2(3));
+        s21 = sin(theta2(1));
+        s22 = sin(theta2(2));
+        s23 = sin(theta2(3));
+
+        c31 = cos(theta3(1));
+        c32 = cos(theta3(2));
+        c33 = cos(theta3(3));
+        s31 = sin(theta3(1));
+        s32 = sin(theta3(2));
+        s33 = sin(theta3(3));
+
+            R_1in0 = [c11,-s11,0;s11,c11,0;0,0,1]*[c12,0,s12;0,1,0;-s12,0,c12]*[1,0,0;0,c13,-s13;0,s13,c13];
+            R_2in0 = [c21,-s21,0;s21,c21,0;0,0,1]*[c22,0,s22;0,1,0;-s22,0,c22]*[1,0,0;0,c23,-s23;0,s23,c23];
+            R_3in0 = [c31,-s31,0;s31,c31,0;0,0,1]*[c32,0,s32;0,1,0;-s32,0,c32]*[1,0,0;0,c33,-s33;0,s33,c33];
+            R_0in1 = transpose(R_1in0);
+            R_0in3 = transpose(R_3in0);
+            R_0in2 =transpose( R_2in0);
+            R_2in1 = R_0in1 * R_2in0;
+            R_1in2 = transpose(R_2in1);
+            R_3in1 = R_0in1 * R_3in0;
+            R_1in3 = transpose(R_3in1);
+
+%conversions
+o_2in1 = [robot.o_2in1];
+o_1in2 = -R_1in2 * o_2in1;
+o_3in1 = [robot.o_3in1];
+o_1in3 = -R_1in3 * o_3in1;
+p_12in2 = R_2in0' * R_1in0 * (p_12in1 - o_2in1);
+p_13in3 = R_3in0' * R_1in0 * (p_13in1 - o_3in1);
+
+    x_0in0 = eye(3,1);
+    x_1in1 = eye(3,1);
+    x_2in2 = eye(3,1);
+    x_3in3 = x_2in2;
+    z_0in0 = [0;0;1];
+    z_0in2 = R_2in0' * z_0in0;
+    z_0in3 = R_3in0' * z_0in0;
+    y_3in3 = [0;1;0];
+    z_3in3 = [0;0;1];
+    x_1in0 = R_1in0 * x_1in1;
+
+%solving thetadot
+    theta1dot = getthetadot(theta1(2),theta1(3)) * w_01in1;
+    theta2dot = getthetadot(theta2(2),theta2(3)) * w_02in2;
+    theta3dot = getthetadot(theta3(2),theta3(3)) * w_03in3;
+
+%work
 
 
-%F = [];
-%h = [];
+        constraints = R_3in0*S_13;
+        bh_2 = x_2in2' * (w_02in2 - (R_2in0' * R_1in0 * w_01in1));
+        bh_3 = x_3in3' * (w_03in3 - (R_3in0' * R_1in0 * w_01in1));
 
-gamma = zeros(18,1);%F\h;
-o_1in0dot = v_01in0;
-o_2in0dot = v_02in0;
-o_3in0dot = v_03in0;
-theta1dot = w_01in1;        %is this right?
-theta2dot = w_02in2;        %is this right?
-theta3dot = w_03in3;        %is this right?
+F = [m1*eye(3), zeros(3,3), zeros(3,3), zeros(3,3), zeros(3,3), zeros(3,3), R_1in0, R_1in0, zeros(3,2), zeros(3,2),zeros(3,3), zeros(3,3);
+    zeros(3,3), m2*eye(3), zeros(3,3), zeros(3,3), zeros(3,3), zeros(3,3), -R_1in0, zeros(3,3), zeros(3,2), zeros(3,2), -eye(3), zeros(3,3);
+    zeros(3,3), zeros(3,3), m3*eye(3), zeros(3,3), zeros(3,3), zeros(3,3), zeros(3,3), -R_1in0, zeros(3,2), zeros(3,2), zeros(3,3), -eye(3);
+    zeros(3,3), zeros(3,3), zeros(3,3), J1, zeros(3,3), zeros(3,3), wedge(p_12in1), wedge(p_13in1), S_12, S_13, zeros(3,3), zeros(3,3);
+    zeros(3,3), zeros(3,3), zeros(3,3), zeros(3,3), J2, zeros(3,3), -wedge(p_12in2)*R_1in2, zeros(3,3), -R_1in2*S_12, zeros(3,2), wedge(r*z_0in2)*R_0in2, zeros(3,3);
+    zeros(3,3), zeros(3,3), zeros(3,3), zeros(3,3), zeros(3,3), J3, zeros(3,3), -wedge(p_13in3)*R_1in3, zeros(3,2), -R_1in3*S_13, zeros(3,3), wedge(r*z_0in3)*R_3in0';
+    -eye(3), eye(3), zeros(3,3), R_1in0*wedge(o_2in1), zeros(3,3), zeros(3,3), zeros(3,3), zeros(3,3), zeros(3,2), zeros(3,2), zeros(3,3), zeros(3,3);
+    -eye(3), zeros(3,3), eye(3), R_1in0*wedge(o_3in1), zeros(3,3), zeros(3,3), zeros(3,3), zeros(3,3), zeros(3,2), zeros(3,2), zeros(3,3), zeros(3,3);
+    zeros(2,3), zeros(2,3), zeros(2,3), -S_12'*R_1in2, S_12', zeros(2,3), zeros(2,3), zeros(2,3), zeros(2,2), zeros(2,2), zeros(2,3), zeros(2,3);
+    zeros(2,3), zeros(2,3), zeros(2,3), -S_13'*R_1in3, zeros(2,3), S_13', zeros(2,3), zeros(2,3), zeros(2,2), zeros(2,2), zeros(2,3), zeros(2,3);
+    zeros(3,3), eye(3), zeros(3,3), zeros(3,3), r*R_2in0*wedge(z_0in2), zeros(3,3), zeros(3,3), zeros(3,3), zeros(3,2), zeros(3,2), zeros(3,3), zeros(3,3);
+    zeros(2,3), zeros(2,3), constraints', zeros(2,3), zeros(2,3), r*(R_3in0*S_13)'*R_3in0*wedge(z_0in3), zeros(2,3), zeros(2,3), zeros(2,2), zeros(2,2), zeros(2,3), zeros(2,3);
+    zeros(1,3), zeros(1,3), zeros(1,3), zeros(1,3), zeros(1,3), zeros(1,3), zeros(1,3), zeros(1,3), zeros(1,2), zeros(1,2), x_1in0', -x_1in0'];
+
+h = [m1 * g;
+    m2 * g;
+    m3 * g;
+    -wedge(w_01in1) * J1 * w_01in1 - t12 * (u2 - k * (bh_2))- t13 * (u3 - k * (bh_3));
+    -wedge(w_02in2) * J2 * w_02in2 + R_1in2 * t12 * (u2 - k * (bh_2));
+    -wedge(w_03in3) * J3 * w_03in3 + R_1in3 * t13 * (u3 - k * (bh_3));
+    R_1in0 * ((wedge(w_01in1))^2) * o_2in1;
+    R_1in0 * ((wedge(w_01in1))^2) * o_3in1;
+    S_12' * (R_2in0 * wedge(w_02in2))' * R_1in0 * w_01in1;
+    S_13' * (R_3in0 * wedge(w_03in3))' * R_1in0 * w_01in1;
+    zeros(3,1);
+    zeros(2,1);
+    0];
+
+gamma = F\h;
+
+%solutions 
 v_01in0dot = gamma(1:3);
 v_02in0dot = gamma(4:6);
 v_03in0dot = gamma(7:9);
@@ -364,9 +460,7 @@ w_02in2dot = gamma(13:15);
 w_03in3dot = gamma(16:18);
 
 
-
 end
-
 %
 %
 %
@@ -581,12 +675,22 @@ m = rho*(pi*a*r^2)/3;
 J = (m/10)*diag([6*r^2,2*a^2+3*r^2,2*a^2+3*r^2]);
 end
 
-function [wedge] = wedge(vector)
-wedge = [0 -vector(3) vector(2);
-         vector(3) 0 vector(1);
-         -vector(2) vector(1) 0];
+function y = wedge(x)
+y = [0,-x(3),x(2);
+    x(3),0,-x(1);
+    -x(2),x(1),0];
 end
+function result = getthetadot(a,b)
 
+c2 = cos(a);
+c3 = cos(b);
+s2 = sin(a);
+s3 = sin(b);
+
+result = [0 s3/c2 c3/c2;
+            0 c3 -s3;
+            1 s2*c3/c2 c3*s2/c2];
+end
 %
 %
 %
