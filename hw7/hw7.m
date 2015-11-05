@@ -227,21 +227,35 @@ while (1)
     %       theta2 and theta3 are the ZYX E.A.'s for frames 2 and 3,
     %       respectively
     %
-    c2 = cos(theta1(2)); c3 = cos(theta1(3)); s2 = sin(theta1(2)); s3 = sin(theta1(3));
-    phi = theta1(1);
-    thetaa = theta1(2);
-    psi = theta1(3); 
-    R_1in0 = [cos(psi)*cos(thetaa) cos(psi)*sin(thetaa)*sin(phi)-sin(psi)*cos(phi) cos(psi)*sin(thetaa)*cos(phi)+sin(psi)*cos(phi);...
-             sin(psi)*cos(thetaa) sin(psi)*sin(thetaa)*sin(phi)+cos(psi)*cos(phi) sin(psi)*sin(thetaa)*cos(phi)-cos(phi)*sin(phi);...
-             -sin(thetaa) cos(thetaa)*sin(phi) cos(thetaa)*cos(phi)];           %ZYX euler angles from AE 483 labs 
-    R_2in1 = [1 0 0;
-              0 c2 -s2;
-              0 s2 c2];
-    R_2in0 = R_2in1*R_1in0;
-    R_3in1 = [1 0 0;
-              0 c3 -s3;
-              0 s3 c3];
-    R_3in0 = R_3in1*R_1in0;
+    c11 = cos(theta1(1));
+    c12 = cos(theta1(2));
+    c13 = cos(theta1(3));
+    s11 = sin(theta1(1));
+    s12 = sin(theta1(2));
+    s13 = sin(theta1(3));
+    
+    c21 = cos(theta2(1));
+    c22 = cos(theta2(2));
+    c23 = cos(theta2(3));
+    s21 = sin(theta2(1));
+    s22 = sin(theta2(2));
+    s23 = sin(theta2(3));
+    
+    c31 = cos(theta3(1));
+    c32 = cos(theta3(2));
+    c33 = cos(theta3(3));
+    s31 = sin(theta3(1));
+    s32 = sin(theta3(2));
+    s33 = sin(theta3(3));
+    
+    R_1in0 = [c11,-s11,0;s11,c11,0;0,0,1]*[c12,0,s12;0,1,0;-s12,0,c12]*[1,0,0;0,c13,-s13;0,s13,c13];
+    R_2in0 = [c21,-s21,0;s21,c21,0;0,0,1]*[c22,0,s22;0,1,0;-s22,0,c22]*[1,0,0;0,c23,-s23;0,s23,c23];
+    R_3in0 = [c31,-s31,0;s31,c31,0;0,0,1]*[c32,0,s32;0,1,0;-s32,0,c32]*[1,0,0;0,c33,-s33;0,s33,c33];
+    
+    % Compute: (coordinate transformations)
+    robot.chassis.p_in0 = o_1in0 * ones(1,8) + R_1in0 * robot.chassis.p_in1;
+    robot.wheel2.p_in0 = o_2in0 * ones(1,34) + R_2in0 * robot.wheel2.p_in2;
+    robot.wheel3.p_in0 = o_3in0 * ones(1,34) + R_3in0 * robot.wheel3.p_in3;
     
     % Compute: (coordinate transformations)
     robot.chassis.p_in0 = R_1in0*robot.chassis.p_in1 + [o_1in0 o_1in0 o_1in0 o_1in0 o_1in0 o_1in0 o_1in0 o_1in0];
