@@ -16,11 +16,11 @@ params.snapshot_filename = 'snapshot.pdf';
 % - This line says whether or not you want to record a movie --- change it
 %   from "false" to "true" and you will record a movie. Note that you must
 %   have already recorded actions, before making a movie!
-params.makemovie = true;
+params.makemovie = false;
 % - This line says whether or not you want to take a snapshot --- change it
 %   from "false" to "true" and you will create a PDF of the figure after
 %   the simulation is over.
-params.makesnapshot = true;
+params.makesnapshot = false;
 
 % The keyboard interface is as follows:
 %
