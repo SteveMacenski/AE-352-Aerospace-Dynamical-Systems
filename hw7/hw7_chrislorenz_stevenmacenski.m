@@ -1,4 +1,4 @@
-function hw7
+function hw7_chrislorenz_stevenmacenski
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
