@@ -361,11 +361,52 @@ end
 function [o_1in0dot,o_2in0dot,thetaLdot,thetaRdot,v_01in0dot,v_02in0dot,w_01in1dot,w_02in2dot] = ...
     GetRatesR(o_1in0,o_2in0,thetaL,thetaR,v_01in0,v_02in0,w_01in1,w_02in2,robot)
 
-% - position and orientation
-o_1in0dot = zeros(3,1);
-o_2in0dot = zeros(3,1);
-thetaLdot = zeros(3,1);
-thetaRdot = zeros(3,1);
+o_1in0dot = v_01in0;
+o_2in0dot = v_02in0;
+
+thetaLdot = GetAnguleRates(thetaL,w_01in1);
+thetaRdot = GetAnguleRates(thetaR,w_02in2);
+
+%rotation matrix definitions
+R_1in0 = R_ZYX(thetaL);
+R_2in0 = R_ZYX(thetaR);
+
+R_1in2 = R_2in0'*R_1in0;
+
+R_0in2 = transpose(R_2in0);
+R_2in1 = transpose(R_1in2);
+
+    %shorter writing
+p_12in1 = robot.p_12in1;
+p_12in2 = robot.p_12in2;
+
+r = 1;
+
+x_1in1 = [1 0 0]';
+z_0in0 = [0 0 1]';
+z_0in2 = R_2in0'*z_0in0;
+
+p_02in2 = p_12in2 -r*z_0in2;
+
+w_12in2 = w_02in2 - R_2in1'*w_01in1;
+
+blah_thing = x_1in1'*w_12in2;
+
+k = robot.k;
+
+S12 = [0 0; 1 0; 0 1];
+    
+t12 = [1 0 0]';   
+
+MR = robot.mR;
+ML = robot.mL;
+
+g = robot.g_in0;
+
+J2 = robot.J_Rin2;
+J1 = robot.J_Lin1;
+
+
 
 % - linear and angular velocity
 v_01in0dot = zeros(3,1);
@@ -382,11 +423,51 @@ end
 function [o_1in0dot,o_2in0dot,thetaLdot,thetaRdot,v_01in0dot,v_02in0dot,w_01in1dot,w_02in2dot] = ...
     GetRatesL(o_1in0,o_2in0,thetaL,thetaR,v_01in0,v_02in0,w_01in1,w_02in2,robot)
 
-% - position and orientation
-o_1in0dot = zeros(3,1);
-o_2in0dot = zeros(3,1);
-thetaLdot = zeros(3,1);
-thetaRdot = zeros(3,1);
+o_1in0dot = v_01in0;
+o_2in0dot = v_02in0;
+
+thetaLdot = GetAnguleRates(thetaL, w_01in1);
+thetaRdot = GetAnguleRates(thetaR, w_02in2);
+
+%rotation matrix definitions
+R_1in0 = R_ZYX(thetaL);
+R_2in0 = R_ZYX(thetaR);
+
+R_1in2 = R_2in0'*R_1in0;
+
+R_0in2 = transpose(R_2in0);
+R_2in1 = transpose(R_1in2);
+
+    %shorter writing
+p_12in1 = robot.p_12in1;
+p_12in2 = robot.p_12in2;
+
+r = 1;
+
+x_1in1 = [1;0;0];
+z_0in0 = [0;0;1];
+z_0in2 = R_2in0'*z_0in0;
+
+p_02in2 = p_12in2 -r*z_0in2;
+
+w_12in2 = w_02in2 - R_2in1'*w_01in1;
+
+blah_thing = x_1in1'*w_12in2;
+
+k = robot.k;
+
+S12 = [0 0; 1 0; 0 1];
+    
+t12 = [1 0 0]';   
+
+mR = robot.mR;
+mL = robot.mL;
+
+g = robot.g_in0;
+
+J2 = robot.J_Rin2;
+J1 = robot.J_Lin1;
+
 
 % - linear and angular velocity
 v_01in0dot = zeros(3,1);
@@ -402,7 +483,42 @@ end
 %
 function [v_01in0,v_02in0,w_01in1,w_02in2] = ...
             SwitchFromLToR(o_1in0,o_2in0,thetaL,thetaR,v_01in0,v_02in0,w_01in1,w_02in2,robot)
+    %rotations
+R_1in0 = R_ZYX(thetaL);
+R_2in0 = R_ZYX(thetaR);
 
+R_1in2 = R_2in0'*R_1in0;
+
+R_0in2 = R_2in0';
+R_2in1 = R_1in2';   
+    
+    %shorthands 
+p_12in1 = robot.p_12in1;
+p_12in2 = robot.p_12in2;
+r = 1;
+
+x_1in1 = [1 0 0]';
+z_0in0 = [0 0 1]';
+z_0in2 = R_2in0'*z_0in0;
+
+p_02in2 = p_12in2 -r*z_0in2;
+
+w_12in2 = w_02in2 - R_2in1' * w_01in1;
+
+k = robot.k;
+
+S12 = [0 0; 1 0; 0 1];
+    
+t_12 = [1 0 0]';   
+
+mR = robot.mR;
+mL = robot.mL;
+
+phi = 0.2;
+g = [0; sin(phi); -cos(phi)];
+
+J2 = robot.J_Rin2;
+J1 = robot.J_Lin1;
 
 end
 
@@ -412,7 +528,42 @@ end
 %
 function [v_01in0,v_02in0,w_01in1,w_02in2] = ...
             SwitchFromRToL(o_1in0,o_2in0,thetaL,thetaR,v_01in0,v_02in0,w_01in1,w_02in2,robot)
+    %rotations
+R_1in0 = R_ZYX(thetaL);
+R_2in0 = R_ZYX(thetaR);
 
+R_1in2 = R_2in0'*R_1in0;
+
+R_0in2 = R_2in0';
+R_2in1 = R_1in2';   
+    
+    %shorthands 
+p_12in1 = robot.p_12in1;
+p_12in2 = robot.p_12in2;
+r = 1;
+
+x_1in1 = [1 0 0]';
+z_0in0 = [0 0 1]';
+z_0in2 = R_2in0'*z_0in0;
+
+p_02in2 = p_12in2 -r*z_0in2;
+
+w_12in2 = w_02in2 - R_2in1' * w_01in1;
+
+k = robot.k;
+
+S12 = [0 0; 1 0; 0 1];
+    
+t_12 = [1 0 0]';   
+
+mR = robot.mR;
+mL = robot.mL;
+
+phi = 0.2;
+g = [0; sin(phi); -cos(phi)];
+
+J2 = robot.J_Rin2;
+J1 = robot.J_Lin1;
 
 end
 
@@ -750,6 +901,21 @@ end
 p(3,:) = p(3,:) + r;
 end
 
+function thetadot = GetAnguleRates(theta,w)
+
+c2 = cos(theta(2));
+s2 = sin(theta(2));
+c3 = cos(theta(3));
+s3 = sin(theta(3));
+
+A = [-s2 0 1;
+     c2*s3 c3 0;
+     c2*c3 -s3 0];
+ 
+thetadot = A\w;
+
+end
+
 function R = RX(h)
 R = [1 0 0;
      0 cos(h) -sin(h);
@@ -771,6 +937,7 @@ end
 function R = R_ZYX(theta)
 R = RZ(theta(1))*RY(theta(2))*RX(theta(3));
 end
+
 
 %
 %
