@@ -25,7 +25,7 @@ function hw8
 %
 
 % - This line says your name.
-params.teamname = 'My Team (My Name and My Other Name)';
+params.teamname = 'My Team (Steve Macenski and Chris Lorenz)';
 % - This line says the file to record your movie.
 params.movie_filename = 'movie.mp4';
 % - This line says the file to record your snapshot.
@@ -79,7 +79,7 @@ robot=[];
 robot.k = .01;
 
 % - angle of slope (radians)
-robot.slopeangle = 0.3;
+robot.slopeangle = 0.1;
 
 %
 %
@@ -273,16 +273,24 @@ while (1)
     %
     %       thetaR is a 3x1 matrix of the ZYX E.A.'s for frame 2
     %
-    R_1in0 = eye(3);
-    R_2in0 = eye(3);
+    R_1in0 = R_ZYX(thetaL);
+    R_2in0 = R_ZYX(thetaR);
     
     %
     % Compute: (coordinate transformations)
     %
-    robot.pL_in0 = robot.pL_in1;
-    robot.pR_in0 = robot.pR_in2;
-    robot.pJointL_in0 = robot.pJointL_in1;
-    robot.pJointR_in0 = robot.pJointR_in2;
+    for i=1:size(robot.pL_in1,2)
+        robot.pL_in0(:,i) = o_1in0 + R_1in0*robot.pL_in1(:,i);
+    end
+    for i=1:size(robot.pR_in2,2)
+        robot.pR_in0(:,i) = o_2in0+R_2in0*robot.pR_in2(:,i);
+    end
+    for i=1:size(robot.pJointL_in1,2)
+        robot.pJointL_in0(:,i) = o_1in0 + R_1in0*robot.pJointL_in1(:,i);
+    end
+    for i=1:size(robot.pJointR_in2,2)
+        robot.pJointR_in0(:,i) = o_2in0 + R_2in0*robot.pJointR_in2(:,i);
+    end
     
 %
 %
