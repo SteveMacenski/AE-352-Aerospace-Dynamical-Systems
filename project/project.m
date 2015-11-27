@@ -430,7 +430,51 @@ end
 
 
 
-
+function world = CreateFigure(robot,params)
+% - clear the current figure
+clf;
+% - these things have the correct value
+o_0in0 = zeros(3,1);
+R_0in0 = eye(3);
+% - these things have the incorrect value, but we don't care
+o_3in0 = zeros(3,1);
+R_3in0 = eye(3);
+% - text (it's important this is in the back, so you can rotate the view
+%         and other stuff!)
+axes('position',[0 0 1 1]);
+axis([0 1 0 1]);
+hold on;
+axis off;
+fs = 10;
+world.text.time=text(0.05,0.1,sprintf('t = %6.2f / %6.2f\n',0,0),'fontsize',fs,'verticalalignment','top','fontname','monaco');
+world.text.teamname=text(0.05,0.04,params.teamname,'fontsize',fs,'verticalalignment','top','fontweight','bold');
+% - view from frame 0
+axes('position',[0.05 -0.05 .9 1.15]);
+title('view: frame 0                                                 ');
+set(gcf,'renderer','opengl');
+axis equal;
+axis(3*[-2 2 -2 2 -1 1]);
+axis manual;
+hold on;
+view([90-37.5,20]);
+box on;
+set(gca,'projection','perspective');
+set(gca,'clipping','on','clippingstyle','3dbox');
+world.view0.robot = DrawRobot([],robot,o_3in0,R_3in0,0.6);
+world.view0.frame0 = DrawFrame([],o_0in0,R_0in0);
+world.view0.frame1 = DrawFrame([],zeros(3,1),eye(3));
+world.view0.frame2 = DrawFrame([],zeros(3,1),eye(3));
+world.view0.frame6 = DrawFrame([],zeros(3,1),eye(3));
+world.view0.frame3 = DrawFrame([],o_3in0,R_3in0);
+lighting gouraud
+world.view0.light = light('position',o_3in0','style','local');
+% - make the figure respond to key commands
+if (params.usekeypad)
+    set(gcf,'KeyPressFcn',@onkeypress_keypad);
+else
+    set(gcf,'KeyPressFcn',@onkeypress_nokeypad);
+end
+end
 
 
 
