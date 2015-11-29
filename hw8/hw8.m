@@ -32,7 +32,7 @@ params.movie_filename = 'movie.mp4';
 params.snapshot_filename = 'snapshot.pdf';
 % - This line says whether or not you want to record a movie --- change it
 %   from "false" to "true" and you will record a movie.
-params.makemovie = false;
+params.makemovie = true;
 % - This line says whether or not you want to take a snapshot --- change it
 %   from "false" to "true" and you will create a PDF of the figure after
 %   the simulation is over.
@@ -79,7 +79,7 @@ robot=[];
 robot.k = .01;
 
 % - angle of slope (radians)
-robot.slopeangle = 0.1;
+robot.slopeangle = 0.10;
 
 %
 %
@@ -248,7 +248,8 @@ if (params.makemovie)
     myV.FrameRate = 25;
     open(myV);
 end
-
+firsttime = 1;
+startfoot = whichfoot;
 % Loop until break.
 while (1)
     
@@ -323,6 +324,14 @@ while (1)
                      v_01in0,v_02in0,w_01in1,w_02in2,...
                      whichfoot,...
                      robot);
+                 
+     if (firsttime)
+        t,o_1in0,o_2in0,thetaL,thetaR,v_01in0,v_02in0,w_01in1,w_02in2,whichfoot
+        firsttime=0;
+    elseif (whichfoot~=startfoot)
+        t,o_1in0,o_2in0,thetaL,thetaR,v_01in0,v_02in0,w_01in1,w_02in2,whichfoot
+%         error('stop');
+    end
     
 end
 % If making a movie, close it.
@@ -344,6 +353,12 @@ end
 
 end
 
+
+function y = wedge(x)
+y = [0,-x(3),x(2);
+    x(3),0,-x(1);
+    -x(2),x(1),0];
+end
 %
 %
 %
@@ -383,15 +398,18 @@ p_12in2 = robot.p_12in2;
 r = 1;
 
 x_1in1 = [1 0 0]';
+x_2in2 = x_1in1;
 z_0in0 = [0 0 1]';
+z_0in1 = R_1in0'*z_0in0;
 z_0in2 = R_2in0'*z_0in0;
 
+p_01in1=p_12in1-r*z_0in1;
 p_02in2 = p_12in2 -r*z_0in2;
 
 w_12in2 = w_02in2 - R_2in1'*w_01in1;
 
 blah_thing = x_1in1'*w_12in2;
-
+ 
 k = robot.k;
 
 S12 = [0 0; 1 0; 0 1];
@@ -406,13 +424,29 @@ g = robot.g_in0;
 J2 = robot.J_Rin2;
 J1 = robot.J_Lin1;
 
+   
+F=[ML*eye(3) zeros(3,3) zeros(3,3) zeros(3,3) R_1in0 zeros(3,2) zeros(3,3);
+ zeros(3,3) J1 zeros(3,3) zeros(3,3) wedge(p_12in1) S12 zeros(3,3);
+ zeros(3,3) zeros(3,3) MR*eye(3) zeros(3,3) -R_1in0 zeros(3,2) -eye(3);
+ zeros(3,3) zeros(3,3) zeros(3,3) J2 -wedge(p_12in2)*R_2in1' -R_2in1'*S12 -wedge(p_02in2)*R_2in0';
+ zeros(2,3) -S12'*R_2in0'*R_1in0 zeros(2,3) S12' zeros(2,3) zeros(2,2) zeros(2,3);
+ zeros(3,3) zeros(3,3) eye(3) (r*R_2in0*wedge(z_0in2)-R_2in0*wedge(p_12in2)) zeros(3,3) zeros(3,2) zeros(3,3);
+ eye(3) -R_1in0*wedge(p_12in1) -eye(3) R_2in0*wedge(p_12in2) zeros(3,3) zeros(3,2) zeros(3,3)];
+h=[ML*g;
+   -wedge(w_01in1)*J1*w_01in1-t12*(-k*(x_2in2'*w_12in2));
+   MR*g;
+   R_2in1'*t12*(-k*(x_2in2'*w_12in2))-wedge(w_02in2)*J2*w_02in2;
+   S12'*(R_2in0*wedge(w_02in2))'*R_1in0*w_01in1+S12'*R_2in0'*R_1in0*wedge(w_01in1)*w_01in1;
+   -R_2in0*wedge(w_02in2)^2*p_12in2+r*R_2in0*wedge(w_02in2)^2*z_0in2+r*R_2in0*wedge(w_02in2)*(R_2in0*wedge(w_02in2))'*z_0in0;
+   -R_1in0*wedge(w_01in1)^2*p_12in1+R_2in0*wedge(w_02in2)^2*p_12in2];
 
+g = F\h;
 
 % - linear and angular velocity
-v_01in0dot = zeros(3,1);
-w_01in1dot = zeros(3,1);
-v_02in0dot = zeros(3,1);
-w_02in2dot = zeros(3,1);
+v_01in0dot = g(1:3);
+w_01in1dot = g(4:6);
+v_02in0dot = g(7:9);
+w_02in2dot = g(10:12);
 
 end
 
@@ -445,12 +479,16 @@ p_12in2 = robot.p_12in2;
 r = 1;
 
 x_1in1 = [1;0;0];
+x_2in2 = x_1in1;
 z_0in0 = [0;0;1];
+z_0in1 = R_1in0'*z_0in0;
 z_0in2 = R_2in0'*z_0in0;
 
+p_01in1=p_12in1-r*z_0in1;
 p_02in2 = p_12in2 -r*z_0in2;
 
 w_12in2 = w_02in2 - R_2in1'*w_01in1;
+w_12in1 = R_2in1*w_12in2;
 
 blah_thing = x_1in1'*w_12in2;
 
@@ -460,21 +498,36 @@ S12 = [0 0; 1 0; 0 1];
     
 t12 = [1 0 0]';   
 
-mR = robot.mR;
-mL = robot.mL;
+MR = robot.mR;
+ML = robot.mL;
 
 g = robot.g_in0;
 
 J2 = robot.J_Rin2;
 J1 = robot.J_Lin1;
 
+F=[ML*eye(3) zeros(3,3) zeros(3,3) zeros(3,3) R_1in0 zeros(3,2) -eye(3);
+ zeros(3,3) J1 zeros(3,3) zeros(3,3) wedge(p_12in1) S12 -wedge(p_01in1)*R_1in0';
+ zeros(3,3) zeros(3,3) MR*eye(3) zeros(3,3) -R_1in0 zeros(3,2) zeros(3,3);
+ zeros(3,3) zeros(3,3) zeros(3,3) J2 -wedge(p_12in2)*R_2in1' -R_2in1'*S12 zeros(3,3);
+ zeros(2,3) -S12'*R_2in0'*R_1in0 zeros(2,3) S12' zeros(2,3) zeros(2,2) zeros(2,3);
+ eye(3) (r*R_1in0*wedge(z_0in1)-R_1in0*wedge(p_12in1)) zeros(3,3) zeros(3,3) zeros(3,3) zeros(3,2) zeros(3,3);
+ eye(3) -R_1in0*wedge(p_12in1) -eye(3) R_2in0*wedge(p_12in2) zeros(3,3) zeros(3,2) zeros(3,3)];
+
+h=[ML*g;
+ -wedge(w_01in1)*J1*w_01in1-t12*(-k*(x_2in2'*w_12in2));
+ MR*g;
+ R_2in1'*t12*(-k*(x_2in2'*w_12in2))-wedge(w_02in2)*J2*w_02in2;
+ S12'*(R_2in0*wedge(w_02in2))'*R_1in0*w_01in1+S12'*R_2in0'*R_1in0*wedge(w_01in1)*w_01in1;
+ -R_1in0*wedge(w_01in1)^2*p_12in1+r*R_1in0*wedge(w_01in1)^2*z_0in1+r*R_1in0*wedge(w_01in1)*(R_1in0*wedge(w_01in1))'*z_0in0;
+ -R_1in0*wedge(w_01in1)^2*p_12in1+R_2in0*wedge(w_02in2)^2*p_12in2];
+g = F\h;
 
 % - linear and angular velocity
-v_01in0dot = zeros(3,1);
-w_01in1dot = zeros(3,1);
-v_02in0dot = zeros(3,1);
-w_02in2dot = zeros(3,1);
-
+v_01in0dot = g(1:3);
+w_01in1dot = g(4:6);
+v_02in0dot = g(7:9);
+w_02in2dot = g(10:12);
 end
 
 %
@@ -498,9 +551,12 @@ p_12in2 = robot.p_12in2;
 r = 1;
 
 x_1in1 = [1 0 0]';
+x_2in2 = x_1in1;
 z_0in0 = [0 0 1]';
+z_0in1 = R_1in0'*z_0in0;
 z_0in2 = R_2in0'*z_0in0;
 
+p_01in1=p_12in1-r*z_0in1;
 p_02in2 = p_12in2 -r*z_0in2;
 
 w_12in2 = w_02in2 - R_2in1' * w_01in1;
@@ -511,8 +567,8 @@ S12 = [0 0; 1 0; 0 1];
     
 t_12 = [1 0 0]';   
 
-mR = robot.mR;
-mL = robot.mL;
+MR = robot.mR;
+ML = robot.mL;
 
 phi = 0.2;
 g = [0; sin(phi); -cos(phi)];
@@ -520,6 +576,31 @@ g = [0; sin(phi); -cos(phi)];
 J2 = robot.J_Rin2;
 J1 = robot.J_Lin1;
 
+
+F=[ML*eye(3) zeros(3,3) zeros(3,3) zeros(3,3) R_1in0 zeros(3,2) zeros(3,3);
+ zeros(3,3) J1 zeros(3,3) zeros(3,3) wedge(p_12in1) S12 zeros(3,3);
+ zeros(3,3) zeros(3,3) MR*eye(3) zeros(3,3) -R_1in0 zeros(3,2) -eye(3);
+ zeros(3,3) zeros(3,3) zeros(3,3) J2 -wedge(p_12in2)*R_2in1' -R_2in1'*S12 -wedge(p_02in2)*R_2in0';
+ zeros(2,3) -S12'*R_2in0'*R_1in0 zeros(2,3) S12' zeros(2,3) zeros(2,2) zeros(2,3);
+ zeros(3,3) zeros(3,3) eye(3) (r*R_2in0*wedge(z_0in2)-R_2in0*wedge(p_12in2)) zeros(3,3) zeros(3,2) zeros(3,3);
+ eye(3) -R_1in0*wedge(p_12in1) -eye(3) R_2in0*wedge(p_12in2) zeros(3,3) zeros(3,2) zeros(3,3)];
+
+
+h=[ML*v_01in0;
+ J1*w_01in1;
+ MR*v_02in0;
+ J2*w_02in2;
+ zeros(2,1);
+ zeros(3,1);
+ zeros(3,1)];
+
+g = F\h;
+
+% - linear and angular velocity
+v_01in0 = g(1:3);
+w_01in1 = g(4:6);
+v_02in0 = g(7:9);
+w_02in2 = g(10:12);
 end
 
 %
@@ -543,12 +624,16 @@ p_12in2 = robot.p_12in2;
 r = 1;
 
 x_1in1 = [1 0 0]';
+x_2in2 = x_1in1;
 z_0in0 = [0 0 1]';
+z_0in1 = R_1in0'*z_0in0;
 z_0in2 = R_2in0'*z_0in0;
 
+p_01in1=p_12in1-r*z_0in1;
 p_02in2 = p_12in2 -r*z_0in2;
 
 w_12in2 = w_02in2 - R_2in1' * w_01in1;
+w_12in1 = R_2in1*w_12in2;
 
 k = robot.k;
 
@@ -556,8 +641,8 @@ S12 = [0 0; 1 0; 0 1];
     
 t_12 = [1 0 0]';   
 
-mR = robot.mR;
-mL = robot.mL;
+MR = robot.mR;
+ML = robot.mL;
 
 phi = 0.2;
 g = [0; sin(phi); -cos(phi)];
@@ -565,6 +650,29 @@ g = [0; sin(phi); -cos(phi)];
 J2 = robot.J_Rin2;
 J1 = robot.J_Lin1;
 
+F=[ML*eye(3) zeros(3,3) zeros(3,3) zeros(3,3) R_1in0 zeros(3,2) -eye(3);
+ zeros(3,3) J1 zeros(3,3) zeros(3,3) wedge(p_12in1) S12 -wedge(p_01in1)*R_1in0';
+ zeros(3,3) zeros(3,3) MR*eye(3) zeros(3,3) -R_1in0 zeros(3,2) zeros(3,3);
+ zeros(3,3) zeros(3,3) zeros(3,3) J2 -wedge(p_12in2)*R_2in1' -R_2in1'*S12 zeros(3,3);
+ zeros(2,3) -S12'*R_2in0'*R_1in0 zeros(2,3) S12' zeros(2,3) zeros(2,2) zeros(2,3);
+ eye(3) (r*R_1in0*wedge(z_0in1)-R_1in0*wedge(p_12in1)) zeros(3,3) zeros(3,3) zeros(3,3) zeros(3,2) zeros(3,3);
+ eye(3) -R_1in0*wedge(p_12in1) -eye(3) R_2in0*wedge(p_12in2) zeros(3,3) zeros(3,2) zeros(3,3)];
+
+h=[ML*v_01in0;
+ J1*w_01in1;
+ MR*v_02in0;
+ J2*w_02in2;
+ zeros(2,1);
+ zeros(3,1);
+ zeros(3,1)];
+
+g = F\h;
+
+% - linear and angular velocity
+v_01in0 = g(1:3);
+w_01in1 = g(4:6);
+v_02in0 = g(7:9);
+w_02in2 = g(10:12);
 end
 
 
