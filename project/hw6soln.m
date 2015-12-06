@@ -1,5 +1,5 @@
 function hw6soln
-
+% Lines 453 and 454 will lock joints when uncommented
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % CAN CHANGE
@@ -135,7 +135,7 @@ robot.p_12in1 = [(alpha+delta)*robot.link1.dx;0;0];
 robot.p_23in2 = [(alpha+delta)*robot.link2.dx;beta*robot.link2.dy;0];
 
 % - The coefficient of friction at each joint
-robot.kfriction = 1;
+robot.kfriction = 4.5;
 
 %
 %
@@ -189,7 +189,7 @@ dt = 5e-2;
 tmax = 100;
 % Define initial conditions
 % - joint angles (configuration)
-theta = [0;0;0];
+theta = [0;-pi/2;pi/2];
 % - joint velocities
 thetadot = [0;0;0];
 % Define intial motor torques
@@ -450,6 +450,8 @@ h3 = [-m3*(R_1in0*(wedge(w_01in1)*wedge(w_01in1)*(b1+a2))+R_2in0*(wedge(w_02in2)
 F = [F1;F2;F3];
 h = [h1;h2;h3];
 soln = F\h;
+% soln(1,:)=0;
+% soln(2,:)=0;
 thetadotdot = soln(1:3,:);
 
 
