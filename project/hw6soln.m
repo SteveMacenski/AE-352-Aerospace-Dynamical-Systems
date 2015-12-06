@@ -135,9 +135,10 @@ robot.p_12in1 = [(alpha+delta)*robot.link1.dx;0;0];
 robot.p_23in2 = [(alpha+delta)*robot.link2.dx;beta*robot.link2.dy;0];
 
 % - The coefficient of friction at each joint
-robot.kfriction = 4.5;
-
-%
+robot.kfriction =12;
+% for one link, 2.75 looks right 
+%for two links, 8 looks right
+% for full links, 12 looks right
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -189,7 +190,8 @@ dt = 5e-2;
 tmax = 100;
 % Define initial conditions
 % - joint angles (configuration)
-theta = [0;-pi/2;pi/2];
+%theta = [0;-pi/2;pi/2]; %<------- for one link configuration
+theta = [0;0;0]; %<-------- for two link configuration
 % - joint velocities
 thetadot = [0;0;0];
 % Define intial motor torques
@@ -450,8 +452,8 @@ h3 = [-m3*(R_1in0*(wedge(w_01in1)*wedge(w_01in1)*(b1+a2))+R_2in0*(wedge(w_02in2)
 F = [F1;F2;F3];
 h = [h1;h2;h3];
 soln = F\h;
-% soln(1,:)=0;
-% soln(2,:)=0;
+%soln(1,:)=0;
+%soln(2,:)=0;
 thetadotdot = soln(1:3,:);
 
 
