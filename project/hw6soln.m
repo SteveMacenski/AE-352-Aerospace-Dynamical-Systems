@@ -6,7 +6,7 @@ function hw6soln
 %
 
 % - This line says your name.
-params.teamname = 'My Team (My Name and My Other Name)';
+params.teamname = '';
 % - This line says the file to record your actions.
 params.action_filename = 'action.mat';
 % - This line says the file to record your movie.
@@ -16,7 +16,7 @@ params.snapshot_filename = 'snapshot.pdf';
 % - This line says whether or not you want to record a movie --- change it
 %   from "false" to "true" and you will record a movie. Note that you must
 %   have already recorded actions, before making a movie!
-params.makemovie = false;
+params.makemovie = true;
 % - This line says whether or not you want to take a snapshot --- change it
 %   from "false" to "true" and you will create a PDF of the figure after
 %   the simulation is over.
@@ -54,6 +54,9 @@ robot = GetGeometryOfRobot;
 RunSimulation(robot,params);
 
 function robot = GetGeometryOfRobot
+density = 1;
+kf= 7;
+
 % - Vertices for base
 robot.base.dx=sqrt(2);
 robot.base.dy=sqrt(2);
@@ -102,9 +105,9 @@ robot.faces =  [1 2 3;
                 2 1 5];
 
 % - The density (assumed uniform) of each link
-robot.link1.rho = 1;
-robot.link2.rho = 1;
-robot.link3.rho = 1;
+robot.link1.rho = density;
+robot.link2.rho = density;
+robot.link3.rho = density;
 
 % - Parameters that you may ignore
 alpha = 0.5;
@@ -135,7 +138,7 @@ robot.p_12in1 = [(alpha+delta)*robot.link1.dx;0;0];
 robot.p_23in2 = [(alpha+delta)*robot.link2.dx;beta*robot.link2.dy;0];
 
 % - The coefficient of friction at each joint
-robot.kfriction =12;
+robot.kfriction =kf;
 % for one link, 2.75 looks right 
 %for two links, 8 looks right
 % for full links, 12 looks right
@@ -149,13 +152,13 @@ robot.kfriction =12;
 %
 
 % - Mass and moment of inertia of link #1
-[robot.link1.m,robot.link1.J_in1] = MassAndMomentOfInertiaOfBox(robot.link1.dx,robot.link1.dy,robot.link1.dz);
+[robot.link1.m,robot.link1.J_in1] = MassAndMomentOfInertiaOfBox(robot.link1.dx,robot.link1.dy,robot.link1.dz,density);
 
 % - Mass and moment of inertia of link #2
-[robot.link2.m,robot.link2.J_in2] = MassAndMomentOfInertiaOfBox(robot.link2.dx,robot.link2.dy,robot.link2.dz);
+[robot.link2.m,robot.link2.J_in2] = MassAndMomentOfInertiaOfBox(robot.link2.dx,robot.link2.dy,robot.link2.dz,density);
 
 % - Mass and moment of inertia of link #3
-[robot.link3.m,robot.link3.J_in3] = MassAndMomentOfInertiaOfBox(robot.link3.dx,robot.link3.dy,robot.link3.dz);
+[robot.link3.m,robot.link3.J_in3] = MassAndMomentOfInertiaOfBox(robot.link3.dx,robot.link3.dy,robot.link3.dz,density);
 
 %
 %
@@ -190,8 +193,8 @@ dt = 5e-2;
 tmax = 100;
 % Define initial conditions
 % - joint angles (configuration)
-%theta = [0;-pi/2;pi/2]; %<------- for one link configuration
-theta = [0;0;0]; %<-------- for two link configuration
+% theta = [0;-pi/2;pi/2]; %<------- for one link configuration
+theta = [0;pi;0]; %<-------- for two link configuration
 % - joint velocities
 thetadot = [0;0;0];
 % Define intial motor torques
@@ -390,7 +393,8 @@ R_3in0 = R_2in0*R_3in2;
 o_3in0 = o_2in0+R_2in0*o_3in2;
 
 % - gravity
-g = 9.81;
+% g = 386.22;
+g = 100;
 
 % - copied over for convenience
 m1 = robot.link1.m;
@@ -452,8 +456,8 @@ h3 = [-m3*(R_1in0*(wedge(w_01in1)*wedge(w_01in1)*(b1+a2))+R_2in0*(wedge(w_02in2)
 F = [F1;F2;F3];
 h = [h1;h2;h3];
 soln = F\h;
-%soln(1,:)=0;
-%soln(2,:)=0;
+% soln(1,:)=0;
+% soln(2,:)=0;
 thetadotdot = soln(1:3,:);
 
 
@@ -533,6 +537,7 @@ end
 
 function frame = DrawFrame(frame,o,R)
 p = [o repmat(o,1,3)+R];
+view(90,15);
 if isempty(frame)
     frame.x = plot3(p(1,[1 2]),p(2,[1 2]),p(3,[1 2]),'r-','linewidth',4);
     frame.y = plot3(p(1,[1 3]),p(2,[1 3]),p(3,[1 3]),'g-','linewidth',4);
@@ -617,9 +622,9 @@ end
 % THINGS I ADDED
 %
 
-function [m,J] = MassAndMomentOfInertiaOfBox(x,y,z)
+function [m,J] = MassAndMomentOfInertiaOfBox(x,y,z,density)
 % - assumes unit, uniform density
-m = x*y*z;
+m = x*y*z*density;
 J = (m/12)*diag([y^2+z^2,z^2+x^2,x^2+y^2]);
 function R = RX(h)
 R = [1 0 0;
